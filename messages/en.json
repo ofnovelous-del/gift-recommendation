@@ -1,0 +1,156 @@
+{
+  "common": {
+    "appName": "Gift Recommendation System",
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "forgotPassword": "Forgot Password?",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "landing": {
+    "hero": {
+      "title": "Find the Perfect Gift with AI",
+      "subtitle": "Smart gift recommendation system that analyzes recipient behavior and preferences",
+      "cta": "Get Started",
+      "badge": "✨ Intelligent Gift Recommendation System",
+      "headline": "Find the Right Gift",
+      "headlineHighlight": "for Everyone",
+      "description": "Use AI to analyze behavior, personality, and preferences to recommend the most suitable gift for the recipient",
+      "startAssessment": "🎁 Start Assessment Now",
+      "forSalesStaff": "For Sales Staff"
+    },
+    "features": {
+      "title": "Key Features",
+      "subtitle": "AI technology that makes gift selection easier and more accurate",
+      "aiAnalysis": {
+        "title": "AI-Powered Analysis",
+        "description": "Analyze behavior and preferences with modern AI using internationally recognized psychological principles"
+      },
+      "personalizedMatching": {
+        "title": "Personalized Matching",
+        "description": "Match gifts that are suitable for each individual, creating impressions and good relationships"
+      },
+      "smartAnalytics": {
+        "title": "Smart Analytics",
+        "description": "Reports and insights for sales teams and marketing departments to grow your business"
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "4 Simple Steps to the Right Gift",
+      "step1": {
+        "title": "Create Profile",
+        "description": "Enter basic information about the gift recipient"
+      },
+      "step2": {
+        "title": "Complete Questionnaire",
+        "description": "Answer questions to analyze behavior and preferences"
+      },
+      "step3": {
+        "title": "Get Recommendations",
+        "description": "AI will recommend the most suitable gifts"
+      },
+      "step4": {
+        "title": "Save History",
+        "description": "Store data for future recommendations"
+      }
+    },
+    "psychology": {
+      "title": "Psychological Principles",
+      "subtitle": "Using internationally recognized psychological frameworks",
+      "bigFive": {
+        "title": "Big Five Personality",
+        "description": "Analyze personality in 5 dimensions: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism"
+      },
+      "valueBased": {
+        "title": "Value-Based Assessment",
+        "description": "Assess values that matter in life such as success, relationships, experiences"
+      },
+      "lifestyle": {
+        "title": "Lifestyle Mapping",
+        "description": "Match lifestyle and interests with appropriate gift types"
+      },
+      "persona": {
+        "title": "Gift Persona Matching",
+        "description": "Categorize gift recipients such as Practical, Experience, Luxury types"
+      }
+    },
+    "cta": {
+      "title": "Ready to Find the Right Gift?",
+      "description": "Start your assessment today and receive personalized gift recommendations in just 5 minutes",
+      "button": "Get Started Free →"
+    },
+    "footer": {
+      "about": "About Us",
+      "help": "Help",
+      "privacy": "Privacy"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "customers": "Customers",
+    "questionnaires": "Questionnaires",
+    "gifts": "Gifts",
+    "recommendations": "Recommendations",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "customer": {
+    "title": "Customers",
+    "addNew": "Add New Customer",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "gender": "Gender",
+    "dateOfBirth": "Date of Birth",
+    "occupation": "Occupation",
+    "address": "Address",
+    "city": "City",
+    "province": "Province",
+    "postalCode": "Postal Code",
+    "notes": "Notes"
+  },
+  "questionnaire": {
+    "title": "Questionnaires",
+    "start": "Start Questionnaire",
+    "complete": "Complete",
+    "progress": "Progress"
+  },
+  "gift": {
+    "title": "Gifts",
+    "addNew": "Add New Gift",
+    "name": "Gift Name",
+    "description": "Description",
+    "category": "Category",
+    "price": "Price",
+    "status": "Status",
+    "brand": "Brand"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "minLength": "Must be at least {min} characters",
+    "maxLength": "Must be no more than {max} characters"
+  }
+}

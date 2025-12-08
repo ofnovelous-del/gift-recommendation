@@ -1,0 +1,447 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== User & Auth ==========
+enum UserRole {
+  ADMIN
+  MARKETING
+  SALES
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          UserRole
+  status        UserStatus  @default(ACTIVE)
+
+  // Metadata
+  lastLoginAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  customers     Customer[]
+  questionnaires Questionnaire[] @relation("QuestionnaireCreator")
+
+  @@index([email])
+  @@index([role])
+}
+
+// ========== Customer Management ==========
+enum CustomerGender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+model Customer {
+  id            String      @id @default(cuid())
+
+  // Basic Info
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  gender        CustomerGender?
+  dateOfBirth   DateTime?
+  occupation    String?
+
+  // Demographics
+  address       String?
+  city          String?
+  province      String?
+  postalCode    String?
+
+  // Behavioral Tags (JSON array)
+  tags          Json?       // ["luxury", "tech-savvy", "eco-friendly"]
+  notes         String?     @db.Text
+
+  // Relationships
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  createdById   String
+
+  // Metadata
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  responses     QuestionnaireResponse[]
+  recommendations GiftRecommendation[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+// ========== Questionnaire System ==========
+enum QuestionnaireStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model Questionnaire {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?     @db.Text
+  category      String?     // "Birthday", "Anniversary", "Corporate"
+
+  status        QuestionnaireStatus @default(DRAFT)
+  isDefault     Boolean     @default(false)
+
+  // AI Generation Info
+  aiGenerated   Boolean     @default(false)
+  aiPrompt      String?     @db.Text
+  aiProvider    String?     // "openai", "claude"
+
+  // Metadata
+  createdBy     User        @relation("QuestionnaireCreator", fields: [createdById], references: [id])
+  createdById   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  questions     Question[]
+  responses     QuestionnaireResponse[]
+
+  @@index([status])
+  @@index([category])
+  @@index([createdById])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  RATING_SCALE
+  TEXT_INPUT
+  YES_NO
+  SLIDER
+}
+
+model Question {
+  id              String      @id @default(cuid())
+  questionnaireId String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+
+  // Question Content
+  questionText    String      @db.Text
+  questionType    QuestionType
+  order           Int
+  required        Boolean     @default(true)
+
+  // Configuration (JSON)
+  config          Json?       // { options: [], min: 1, max: 5, step: 1 }
+  // For MULTIPLE_CHOICE: { options: ["Option 1", "Option 2"] }
+  // For RATING_SCALE: { min: 1, max: 5, labels: ["Poor", "Excellent"] }
+  // For SLIDER: { min: 0, max: 100, step: 10 }
+
+  // Behavioral Mapping
+  behaviorTags    Json?       // Map answers to behavior tags
+
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  answers         Answer[]
+
+  @@index([questionnaireId])
+  @@index([order])
+}
+
+// ========== Response & Answers ==========
+model QuestionnaireResponse {
+  id              String      @id @default(cuid())
+
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id])
+
+  questionnaireId String
+  questionnaire   Questionnaire @relation(fields: [questionnaireId], references: [id])
+
+  // Completion Status
+  startedAt       DateTime    @default(now())
+  completedAt     DateTime?
+  isCompleted     Boolean     @default(false)
+
+  // AI Analysis Result
+  behaviorAnalysis Json?      // AI-generated behavior profile
+  analyzedAt      DateTime?
+
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  answers         Answer[]
+  recommendations GiftRecommendation[]
+
+  @@index([customerId])
+  @@index([questionnaireId])
+  @@index([completedAt])
+}
+
+model Answer {
+  id              String      @id @default(cuid())
+
+  responseId      String
+  response        QuestionnaireResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  questionId      String
+  question        Question    @relation(fields: [questionId], references: [id])
+
+  // Answer Data (flexible JSON)
+  answerValue     Json        // Can be string, number, array, etc.
+
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([responseId])
+  @@index([questionId])
+}
+
+// ========== Gift Catalog ==========
+enum GiftCategory {
+  ELECTRONICS
+  FASHION
+  HOME_LIVING
+  FOOD_BEVERAGE
+  BOOKS_MEDIA
+  SPORTS_OUTDOOR
+  BEAUTY_WELLNESS
+  TOYS_GAMES
+  JEWELRY_ACCESSORIES
+  EXPERIENCE
+  OTHER
+}
+
+enum GiftStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  DISCONTINUED
+}
+
+model Gift {
+  id              String      @id @default(cuid())
+
+  // Basic Info
+  name            String
+  description     String      @db.Text
+  category        GiftCategory
+  subCategory     String?
+
+  // Pricing
+  price           Decimal     @db.Decimal(10, 2)
+  currency        String      @default("THB")
+
+  // Media
+  imageUrl        String?
+  imageUrls       Json?       // Array of image URLs
+  productUrl      String?
+
+  // Attributes
+  brand           String?
+  tags            Json?       // ["premium", "eco-friendly", "trending"]
+  targetAudience  Json?       // ["male", "female", "kids", "senior"]
+  ageRange        String?     // "18-25", "25-35"
+
+  // Behavioral Matching
+  behaviorProfile Json?       // What behaviors this gift matches
+
+  // Inventory
+  status          GiftStatus  @default(AVAILABLE)
+  stockQuantity   Int?
+
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  recommendations GiftRecommendationItem[]
+
+  @@index([category])
+  @@index([status])
+  @@index([price])
+}
+
+// ========== Recommendation System ==========
+model GiftRecommendation {
+  id              String      @id @default(cuid())
+
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id])
+
+  responseId      String
+  response        QuestionnaireResponse @relation(fields: [responseId], references: [id])
+
+  // AI Generation Info
+  aiProvider      String      // "openai", "claude"
+  aiModel         String      // "gpt-4", "claude-3-opus"
+  aiPrompt        String?     @db.Text
+  aiRawResponse   Json?       // Full AI response
+
+  // Recommendation Summary
+  summary         String?     @db.Text
+  reasoning       String?     @db.Text
+
+  // Metadata
+  generatedAt     DateTime    @default(now())
+  viewedAt        DateTime?
+
+  // Relations
+  items           GiftRecommendationItem[]
+
+  @@index([customerId])
+  @@index([responseId])
+  @@index([generatedAt])
+}
+
+model GiftRecommendationItem {
+  id                    String      @id @default(cuid())
+
+  recommendationId      String
+  recommendation        GiftRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  giftId                String
+  gift                  Gift        @relation(fields: [giftId], references: [id])
+
+  // Ranking & Scoring
+  rank                  Int         // 1, 2, 3...
+  confidenceScore       Decimal?    @db.Decimal(5, 2)  // 0-100
+  matchReasons          Json?       // Array of reasons why this gift matches
+
+  // Metadata
+  createdAt             DateTime    @default(now())
+
+  @@index([recommendationId])
+  @@index([giftId])
+  @@index([rank])
+}
+
+// ========== AI Configuration ==========
+enum AIProvider {
+  OPENAI
+  CLAUDE
+  GEMINI
+  CUSTOM
+}
+
+model AIConfiguration {
+  id              String      @id @default(cuid())
+
+  provider        AIProvider
+  modelName       String      // "gpt-4-turbo", "claude-3-opus"
+
+  // API Credentials (encrypted)
+  apiKey          String      // Should be encrypted
+  apiEndpoint     String?
+
+  // Configuration
+  isActive        Boolean     @default(false)
+  isDefault       Boolean     @default(false)
+
+  // Settings
+  temperature     Decimal?    @db.Decimal(3, 2)
+  maxTokens       Int?
+  additionalConfig Json?
+
+  // Usage Tracking
+  requestCount    Int         @default(0)
+  totalTokens     BigInt      @default(0)
+  lastUsedAt      DateTime?
+
+  // Metadata
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([provider])
+  @@index([isActive])
+}
+
+// ========== Analytics & Logging ==========
+model ActivityLog {
+  id              String      @id @default(cuid())
+
+  userId          String?
+  userEmail       String?
+
+  action          String      // "customer_created", "questionnaire_completed"
+  entity          String?     // "Customer", "Questionnaire"
+  entityId        String?
+
+  details         Json?
+  ipAddress       String?
+  userAgent       String?
+
+  createdAt       DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model AIUsageLog {
+  id              String      @id @default(cuid())
+
+  provider        String
+  model           String
+  action          String      // "generate_questions", "analyze_behavior"
+
+  promptTokens    Int?
+  completionTokens Int?
+  totalTokens     Int?
+
+  cost            Decimal?    @db.Decimal(10, 4)
+  latencyMs       Int?
+
+  success         Boolean     @default(true)
+  errorMessage    String?     @db.Text
+
+  createdAt       DateTime    @default(now())
+
+  @@index([provider])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ========== Content Management ==========
+model ContentBlock {
+  id              String      @id @default(cuid())
+
+  key             String      @unique  // "landing_hero_title"
+  type            String      // "text", "html", "image"
+  content         String      @db.Text
+
+  locale          String      @default("th")
+
+  metadata        Json?
+
+  isPublished     Boolean     @default(true)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([key])
+  @@index([locale])
+}

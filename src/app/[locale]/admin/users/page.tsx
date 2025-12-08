@@ -6,6 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+type UserRole = 'ADMIN' | 'MARKETING' | 'SALES';
+
+type NewUser = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  password: string;
+  branch: string;
+};
+
 
 interface User {
   id: string;
@@ -66,14 +77,15 @@ export default function UsersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
-  const [newUser, setNewUser] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    role: 'SALES' as const,
-    password: '',
-    branch: '',
-  });
+  const [newUser, setNewUser] = useState<NewUser>({
+  email: '',
+  firstName: '',
+  lastName: '',
+  role: 'SALES', // ค่าเริ่มต้น แต่ type = 'ADMIN' | 'MARKETING' | 'SALES'
+  password: '',
+  branch: '',
+});
+
 
   const branches = [
     { value: '', label: 'ไม่ระบุสาขา' },
@@ -305,13 +317,19 @@ export default function UsersPage() {
                   <Label>บทบาท</Label>
                   <select
                     value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'ADMIN' | 'MARKETING' | 'SALES' })}
+                    onChange={(e) =>
+                      setNewUser({
+                        ...newUser,
+                        role: e.target.value as UserRole,
+                      })
+                    }
                     className="w-full px-4 py-2 border rounded-lg"
                   >
                     <option value="SALES">พนักงานขาย (SALES)</option>
                     <option value="MARKETING">ฝ่ายการตลาด (MARKETING)</option>
                     <option value="ADMIN">ผู้ดูแลระบบ (ADMIN)</option>
                   </select>
+
                 </div>
                 {newUser.role === 'SALES' && (
                   <div className="space-y-2">

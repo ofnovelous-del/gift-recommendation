@@ -142,8 +142,8 @@ export default function QuestionnairesPage() {
         const content = data.response.choices[0].message.content;
         const questions = content
           .split('\n')
-          .map(q => q.replace(/^\d+[\.\)]\s*/, '').trim())
-          .filter(q => q.length > 10 && (q.includes('?') || q.includes('？')))
+          .map((q: string) => q.replace(/^\d+[\.\)]\s*/, '').trim())
+          .filter((q: string) => q.length > 10 && (q.includes('?') || q.includes('? ')))
           .slice(0, 15);
         setGeneratedQuestions(questions);
       } else {

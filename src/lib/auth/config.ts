@@ -1,9 +1,24 @@
+// src/lib/auth/config.ts
 import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import * as bcrypt from 'bcryptjs';
-import prisma from '@/lib/db/prisma';
-import type { UserRole } from '@prisma/client';
+import type { PrismaClient, UserRole } from '@prisma/client';
 
+// ❗ อย่า import prisma แบบปกติอีกแล้ว
+// import prisma from '@/lib/db/prisma';
+
+// ---- Lazy Prisma Client (โหลดตอน runtime เท่านั้น) ----
+let prisma: PrismaClient | null = null;
+
+async function getPrisma() {
+  if (!prisma) {
+    const { PrismaClient } = await import('@prisma/client');
+    prisma = new PrismaClient();
+  }
+  return prisma;
+}
+
+// ---- Type augmentation ของ next-auth ----
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -40,7 +55,8 @@ export const {
         }
 
         try {
-          // Check if database is available
+          const prisma = await getPrisma(); // 👈 ใช้ Prisma ตอนนี้เท่านั้น
+
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email as string,
@@ -60,14 +76,13 @@ export const {
             return null;
           }
 
-          // Update last login
+          // Update last login (ถ้า error ก็แค่ warn)
           try {
             await prisma.user.update({
               where: { id: user.id },
               data: { lastLoginAt: new Date() },
             });
           } catch (updateError) {
-            // Ignore update error, still allow login
             console.warn('Failed to update last login:', updateError);
           }
 
@@ -79,9 +94,8 @@ export const {
           };
         } catch (error: any) {
           console.error('Database error during authentication:', error);
-          
+
           // Fallback: Allow login with hardcoded credentials if database is not available
-          // This is for development/testing only
           const fallbackUsers = [
             {
               email: 'admin@gift.com',
@@ -106,11 +120,15 @@ export const {
           ];
 
           const fallbackUser = fallbackUsers.find(
-            (u) => u.email === credentials.email && u.password === credentials.password
+            (u) =>
+              u.email === credentials.email &&
+              u.password === credentials.password
           );
 
           if (fallbackUser) {
-            console.warn('Using fallback authentication (database not available)');
+            console.warn(
+              'Using fallback authentication (database not available)'
+            );
             return fallbackUser.user;
           }
 

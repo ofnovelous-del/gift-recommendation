@@ -546,6 +546,7 @@ async function main() {
         locale: 'en',
       },
     ],
+    skipDuplicates: true,
   })
 
   console.log('✅ Created content blocks')

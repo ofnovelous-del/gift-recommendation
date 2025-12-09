@@ -1,14 +1,10 @@
 // src/app/api/auth/[...nextauth]/route.ts
 
-export const runtime = 'nodejs';
+import { GET, POST } from '@/lib/auth/config';
+
+// ให้ route นี้รันแบบ dynamic เสมอ (เหมาะกับ auth)
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
-// ❗ เวอร์ชันชั่วคราวเพื่อให้ deploy ผ่าน
-// ยังไม่ใช้ NextAuth จริง ๆ
-export async function GET() {
-  return new Response('Auth route GET (temporary stub)', { status: 200 });
-}
-
-export async function POST() {
-  return new Response('Auth route POST (temporary stub)', { status: 200 });
-}
+// ใช้ handler จาก NextAuth config จริง
+export { GET, POST };
